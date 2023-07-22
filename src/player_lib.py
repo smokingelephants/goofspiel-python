@@ -11,6 +11,13 @@ class Player(object):
     def new_game(self) -> None:
         self.used_bids = set()
         self.started = True
+        self.score = 0
+
+    def add_score(self, score: Score) -> Bid:
+        if not self.started:
+            raise GoofErrors(f"Forgot to start a new game for player {self.name}")
+
+        self.score += score
 
     def get_bid(self, card: Card) -> Bid:
         if not self.started:

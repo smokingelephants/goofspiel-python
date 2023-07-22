@@ -20,6 +20,7 @@ class GoofLogger(object):
     _KNOWN_LOG_TYPES: Tuple[LogTypes, ...] = (
         "ROUND",
         "BIDS",
+        "PRIZES",
     )
 
     def __init__(
@@ -60,12 +61,25 @@ class GoofLogger(object):
         for player, card in player_bids:
             self.logger.info(f"{player.name} bid {card}")
 
+    def prizes(self, player_scores: List[Tuple[player_lib.Player, Score]]) -> None:
+        if "PRIZES" not in self.log_types:
+            return
+
+        substrs = []
+        for player, score in player_scores:
+            if 0 == score:
+                continue
+            substrs.append(f"{player.name} wins {score}")
+
+        self.logger.info(", ".join(substrs))
+
 
 @attr.s()
 class GameConfig(object):
     deck: List[Card] = attr.ib()
     namer: bot_namer.BotNamer = attr.ib()
     logger: GoofLogger = attr.ib()
+    scorer: Scorer = attr.ib()
 
 
 def play_game_players(players: List[player_lib.Player], config: GameConfig) -> None:
@@ -80,7 +94,10 @@ def play_game_players(players: List[player_lib.Player], config: GameConfig) -> N
             bid = player.get_bid(card)
             player_bids.append((player, bid))
 
-        # TODO: Add scoring part
+        player_scores = config.scorer(card, player_bids)
+        for player, score in player_scores:
+            player.add_score(score)
+        config.logger.prizes(player_scores)
 
         config.logger.bids(player_bids)
 
