@@ -3,52 +3,13 @@
 This should be called from some other program."""
 
 import logging
-import random
 from typing import List, Optional, Tuple
 
 import attr
 
 import bot_namer
-
-
-# TODO: Bid and Card should kinda match...
-Bid = int
-# TODO: Consider making this a strong type
-Card = int
-
-
-# TOOD: Move to another file
-class GoofErrors(Exception):
-    """Any error that's specific to this program's code."""
-
-    pass
-
-
-class Player(object):
-    def __init__(self, name: str):
-        self.name = name
-        self.started = False
-
-    def new_game(self) -> None:
-        self.used_bids = set()
-        self.started = True
-
-    def get_bid(self, card: Card) -> Bid:
-        if not self.started:
-            raise GoofErrors(f"Forgot to start a new game for player {self.name}")
-
-        bid = self._get_bid(card)
-
-        if bid in self.used_bids:
-            raise GoofErrors(
-                f"Player {self.name} can't bid {bid} because they already used it"
-            )
-        self.used_bids.add(bid)
-
-        return bid
-
-    def _get_bid(self, card: Card) -> Bid:
-        raise NotImplementedError
+import player_lib
+from shared_types import *
 
 
 # TODO: Move above?
@@ -92,7 +53,7 @@ class GoofLogger(object):
         # self.logger.info(f"Round {number}:")
         self.logger.info(f"Bid on {bidee}.")
 
-    def bids(self, player_bids: List[Tuple[Player, Card]]) -> None:
+    def bids(self, player_bids: List[Tuple[player_lib.Player, Card]]) -> None:
         if "BIDS" not in self.log_types:
             return
 
@@ -107,26 +68,14 @@ class GameConfig(object):
     logger: GoofLogger = attr.ib()
 
 
-class BotPlayer(Player):
-    def __init__(self, config: GameConfig):
-        prefs = config.deck[:]
-        random.shuffle(prefs)
-        self.bids = {card: bid for card, bid in zip(config.deck, prefs)}
-
-        super().__init__(config.namer.next_name())
-
-    def _get_bid(self, card: Card) -> Bid:
-        return self.bids[card]
-
-
-def play_game_players(players: List[Player], config: GameConfig) -> None:
+def play_game_players(players: List[player_lib.Player], config: GameConfig) -> None:
     for player in players:
         player.new_game()
 
     for round_number, card in enumerate(config.deck):
         config.logger.round(round_number, card)
 
-        player_bids: List[Tuple[Player, Card]] = []
+        player_bids: List[Tuple[player_lib.Player, Card]] = []
         for player in players:
             bid = player.get_bid(card)
             player_bids.append((player, bid))
@@ -137,7 +86,7 @@ def play_game_players(players: List[Player], config: GameConfig) -> None:
 
 
 def play_game(n_bots: int, w_human: bool, config: GameConfig) -> None:
-    players = [BotPlayer(config) for _ in range(n_bots)]
+    players = [player_lib.BotPlayer(config) for _ in range(n_bots)]
 
     if w_human:
         raise NotImplementedError
