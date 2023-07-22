@@ -73,9 +73,9 @@ class GameConfig(object):
 
 class BotPlayer(Player):
     def __init__(self, config: GameConfig):
-        prefs = config.cards[:]
+        prefs = config.deck[:]
         random.shuffle(prefs)
-        self.bids = {card: bid for card, bid in zip(cards, prefs)}
+        self.bids = {card: bid for card, bid in zip(config.deck, prefs)}
 
         super().__init__(config.namer.next_name())
 
