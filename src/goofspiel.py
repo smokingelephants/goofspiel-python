@@ -72,12 +72,12 @@ class GameConfig(object):
 
 
 class BotPlayer(Player):
-    def __init__(self, cards: List[Card]):
-        prefs = cards[:]
+    def __init__(self, config: GameConfig):
+        prefs = config.cards[:]
         random.shuffle(prefs)
         self.bids = {card: bid for card, bid in zip(cards, prefs)}
 
-        super().__init__("Some bot")
+        super().__init__(config.namer.next_name())
 
     def get_bid(self, card: Card) -> Bid:
         return self.bids[card]
@@ -96,7 +96,7 @@ def play_game_players(players: List[Player], config: GameConfig) -> None:
 
 
 def play_game(n_bots: int, w_human: bool, config: GameConfig) -> None:
-    players = [BotPlayer(config.deck) for _ in range(n_bots)]
+    players = [BotPlayer(config) for _ in range(n_bots)]
 
     if w_human:
         raise NotImplementedError

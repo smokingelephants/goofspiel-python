@@ -12,6 +12,6 @@ class NumberedNamer(object):
         super().__init__()
 
     def next_name(self) -> Name:
-        name = f"{self.counter}"
+        name = f"Bot #{self.counter}"
         self.counter += 1
         return name
