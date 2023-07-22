@@ -12,6 +12,7 @@ Card = int
 
 class Score(object):
     """Represented as a mixed number."""
+
     def __init__(self, whole: int, num: int = 0, den: int = 1):
         self.whole = whole
         self.num = num
@@ -53,11 +54,11 @@ class Score(object):
         return self
 
     def _validate(self) -> None:
-        assert(isinstance(self.whole, int))
-        assert(isinstance(self.num, int))
-        assert(isinstance(self.den, int))
-        assert(self.num >= 0)
-        assert(self.den > 0)
+        assert isinstance(self.whole, int)
+        assert isinstance(self.num, int)
+        assert isinstance(self.den, int)
+        assert self.num >= 0
+        assert self.den > 0
 
 
 Scorer = Callable[[Card, List[Tuple["Player", Bid]]], List[Tuple["Player", Score]]]
@@ -68,4 +69,3 @@ class GoofErrors(Exception):
     """Any error that's specific to this program's code."""
 
     pass
-

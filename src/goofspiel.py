@@ -93,13 +93,12 @@ def play_game_players(players: List[player_lib.Player], config: GameConfig) -> N
         for player in players:
             bid = player.get_bid(card)
             player_bids.append((player, bid))
+        config.logger.bids(player_bids)
 
         player_scores = config.scorer(card, player_bids)
         for player, score in player_scores:
             player.add_score(score)
         config.logger.prizes(player_scores)
-
-        config.logger.bids(player_bids)
 
 
 def play_game(n_bots: int, w_human: bool, config: GameConfig) -> None:

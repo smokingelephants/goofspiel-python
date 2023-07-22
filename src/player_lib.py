@@ -47,4 +47,3 @@ class BotPlayer(Player):
 
     def _get_bid(self, card: Card) -> Bid:
         return self.bids[card]
-
