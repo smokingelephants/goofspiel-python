@@ -35,7 +35,7 @@ class GoofErrors(Exception):
 LogTypes = str
 
 class GoofLogger(object):
-    _KNOWN_LOG_TYPES: Tuple[LogTypes, ...] = ("BIDS",)
+    _KNOWN_LOG_TYPES: Tuple[LogTypes, ...] = ("ROUND", "BIDS",)
 
     def __init__(self, logger: Optional[logging.Logger] = None, log_types: Optional[List[LogTypes]] = None):
         """This class will write messages to logger at logging level INFO if the 
@@ -56,12 +56,20 @@ class GoofLogger(object):
             if t not in self._KNOWN_LOG_TYPES:
                 raise GoofErrors(f"Encountered unknown log_type: {t}")
 
+    def round(self, number: int, bidee: Card) -> None:
+        if "ROUND" not in self.log_types:
+            return
+
+        # We don't really need round number do we?
+        # self.logger.info(f"Round {number}:")
+        self.logger.info(f"Bid on {bidee}.")
+
     def bids(self, player_bids: List[Tuple[Player, Card]]) -> None:
-        if not "BIDS" in self.log_types:
+        if "BIDS" not in self.log_types:
             return
 
         for player, card in player_bids:
-            self.logger.info(f"{player.name} played {card}")
+            self.logger.info(f"{player.name} bid {card}")
 
 
 @attr.s()
@@ -84,7 +92,9 @@ class BotPlayer(Player):
 
 
 def play_game_players(players: List[Player], config: GameConfig) -> None:
-    for card in config.deck:
+    for round_number, card in enumerate(config.deck):
+        config.logger.round(round_number, card)
+
         player_bids: List[Tuple[Player, Card]] = []
         for player in players:
             bid = player.get_bid(card)
