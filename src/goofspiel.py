@@ -67,9 +67,9 @@ class GoofLogger(object):
 
         substrs = []
         for player, score in player_scores:
-            if 0 == score:
+            if 0 == score.value():
                 continue
-            substrs.append(f"{player.name} wins {score}")
+            substrs.append(f"{player.name} wins {score.as_str()}")
 
         self.logger.info(", ".join(substrs))
 
