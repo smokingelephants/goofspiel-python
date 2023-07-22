@@ -7,6 +7,9 @@ from typing import List, Tuple
 
 import attr
 
+import bot_namer
+
+
 # TODO: Bid and Card should kinda match...
 Bid = int
 # TODO: Consider making this a strong type
@@ -24,6 +27,7 @@ class Player(object):
 @attr.s()
 class GameConfig(object):
     deck: List[Card] = attr.ib()
+    namer: bot_namer.BotNamer = attr.ib()
 
 
 class BotPlayer(Player):
