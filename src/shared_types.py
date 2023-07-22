@@ -23,7 +23,10 @@ class Score(object):
         frac = ""
         if self.num:
             frac = f" {self.num}/{self.den}"
-        return f"{self.whole}{frac}"
+        points = "points"
+        if 1 == self.value():
+            points = "point"
+        return f"{self.whole}{frac} {points}"
 
     def value(self) -> float:
         """Used for sorting and stuff"""

@@ -3,6 +3,7 @@
 This should be called from some other program."""
 
 import logging
+import random
 from typing import List, Optional, Tuple
 
 import attr
@@ -21,6 +22,7 @@ class GoofLogger(object):
         "ROUND",
         "BIDS",
         "PRIZES",
+        "RESULTS",
     )
 
     def __init__(
@@ -73,6 +75,24 @@ class GoofLogger(object):
 
         self.logger.info(", ".join(substrs))
 
+    def results(self, players: List[player_lib.Player]) -> None:
+        if "RESULTS" not in self.log_types:
+            return
+
+        self.logger.info("=== RESULTS ===")
+        for _rank, player in enumerate(players):
+            rank = _rank + 1
+            th = "th"
+            if 1 == rank % 10:
+                th = "st"
+            if 2 == rank % 10:
+                th = "nd"
+            if 3 == rank % 10:
+                th = "rd"
+            rankth = f"{rank}{th}"
+
+            self.logger.info(f"{player.name} got {rankth} place with {player.score.as_str()}")
+
 
 @attr.s()
 class GameConfig(object):
@@ -99,6 +119,11 @@ def play_game_players(players: List[player_lib.Player], config: GameConfig) -> N
         for player, score in player_scores:
             player.add_score(score)
         config.logger.prizes(player_scores)
+
+    # Rank players
+    NOISE = 0.0001  # This is a hack way to break ties.
+    players.sort(key=lambda p: -p.score.value() + NOISE * random.random())
+    config.logger.results(players)
 
 
 def play_game(n_bots: int, w_human: bool, config: GameConfig) -> None:
