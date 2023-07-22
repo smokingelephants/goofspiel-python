@@ -17,28 +17,56 @@ Bid = int
 Card = int
 
 
-class Player(object):
-    def __init__(self, name: str):
-        self.name = name
-
-    def get_bid(self, card: Card) -> Bid:
-        raise NotImplementedError
-
-
 # TOOD: Move to another file
 class GoofErrors(Exception):
     """Any error that's specific to this program's code."""
+
     pass
+
+
+class Player(object):
+    def __init__(self, name: str):
+        self.name = name
+        self.started = False
+
+    def new_game(self) -> None:
+        self.used_bids = set()
+        self.started = True
+
+    def get_bid(self, card: Card) -> Bid:
+        if not self.started:
+            raise GoofErrors(f"Forgot to start a new game for player {self.name}")
+
+        bid = self._get_bid(card)
+
+        if bid in self.used_bids:
+            raise GoofErrors(
+                f"Player {self.name} can't bid {bid} because they already used it"
+            )
+        self.used_bids.add(bid)
+
+        return bid
+
+    def _get_bid(self, card: Card) -> Bid:
+        raise NotImplementedError
 
 
 # TODO: Move above?
 LogTypes = str
 
-class GoofLogger(object):
-    _KNOWN_LOG_TYPES: Tuple[LogTypes, ...] = ("ROUND", "BIDS",)
 
-    def __init__(self, logger: Optional[logging.Logger] = None, log_types: Optional[List[LogTypes]] = None):
-        """This class will write messages to logger at logging level INFO if the 
+class GoofLogger(object):
+    _KNOWN_LOG_TYPES: Tuple[LogTypes, ...] = (
+        "ROUND",
+        "BIDS",
+    )
+
+    def __init__(
+        self,
+        logger: Optional[logging.Logger] = None,
+        log_types: Optional[List[LogTypes]] = None,
+    ):
+        """This class will write messages to logger at logging level INFO if the
         message type is passed in log_types."""
         self.logger = logger
         if not self.logger:
@@ -87,11 +115,14 @@ class BotPlayer(Player):
 
         super().__init__(config.namer.next_name())
 
-    def get_bid(self, card: Card) -> Bid:
+    def _get_bid(self, card: Card) -> Bid:
         return self.bids[card]
 
 
 def play_game_players(players: List[Player], config: GameConfig) -> None:
+    for player in players:
+        player.new_game()
+
     for round_number, card in enumerate(config.deck):
         config.logger.round(round_number, card)
 
