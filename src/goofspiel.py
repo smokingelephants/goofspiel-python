@@ -23,6 +23,7 @@ class GoofLogger(object):
         "BIDS",
         "PRIZES",
         "RESULTS",
+        "HIGH_SCORE",
     )
 
     def __init__(
@@ -41,7 +42,13 @@ class GoofLogger(object):
             self.logger.addHandler(console_handler)
 
         if log_types is None:
-            self.log_types = list(self._KNOWN_LOG_TYPES)
+            # These are the default types
+            self.log_types = [
+                "ROUND",
+                "BIDS",
+                "PRIZES",
+                "RESULTS",
+            ]
         else:
             self.log_types = log_types[:]
         for t in self.log_types:
@@ -79,6 +86,8 @@ class GoofLogger(object):
         if "RESULTS" not in self.log_types:
             return
 
+        # Assumes players are ordered by score
+
         self.logger.info("=== RESULTS ===")
         for _rank, player in enumerate(players):
             rank = _rank + 1
@@ -91,7 +100,17 @@ class GoofLogger(object):
                 th = "rd"
             rankth = f"{rank}{th}"
 
-            self.logger.info(f"{player.name} got {rankth} place with {player.score.as_str()}")
+            self.logger.info(
+                f"{player.name} got {rankth} place with {player.score.as_str()}"
+            )
+
+    def high_score(self, generation: int, players: List[player_lib.Player]) -> None:
+        if "HIGH_SCORE" not in self.log_types:
+            return
+
+        # Assumes players are ordered by score
+
+        self.logger.info(f"{generation},{players[0].score.as_str()}")
 
 
 @attr.s()
@@ -100,6 +119,9 @@ class GameConfig(object):
     namer: bot_namer.BotNamer = attr.ib()
     logger: GoofLogger = attr.ib()
     scorer: Scorer = attr.ib()
+    breeder: BreedFunction = attr.ib()
+    mutator: MutationFunction = attr.ib()
+    mutation_degree: float = attr.ib()
 
 
 def play_game_players(players: List[player_lib.Player], config: GameConfig) -> None:
@@ -126,10 +148,37 @@ def play_game_players(players: List[player_lib.Player], config: GameConfig) -> N
     config.logger.results(players)
 
 
-def play_game(n_bots: int, w_human: bool, config: GameConfig) -> None:
+def evolve_players(
+    seed_players: List[player_lib.BotPlayer],
+    n_bots: int,
+    survival_rate: int,
+    generations: int,
+    config: GameConfig,
+) -> None:
+    players = seed_players[:]
+
+    for gen in range(generations):
+        while len(players) < n_bots:
+            mom, dad = random.sample(players, 2)
+            players.append(config.breeder(mom, dad, config))
+
+        for player in players:
+            config.mutator(player, config.mutation_degree)
+
+        if generations - 1 == gen:
+            # We don't need to score them again.
+            return
+
+        play_game_players(players, config)  # This will score / sort in-place
+        players = players[:survival_rate]
+
+        config.logger.high_score(gen, players)
+
+
+def play_game(n_bots: int, config: GameConfig) -> None:
     players = [player_lib.BotPlayer(config) for _ in range(n_bots)]
 
-    if w_human:
-        raise NotImplementedError
+    # TODO: Add human player here
+    raise NotImplementedError
 
     play_game_players(players, config)
