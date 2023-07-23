@@ -1,4 +1,5 @@
 import random
+from typing import Optional
 
 from shared_types import *
 
@@ -38,8 +39,10 @@ class Player(object):
 
 
 class BotPlayer(Player):
-    def __init__(self, config: "GameConfig"):
+    def __init__(self, config: "GameConfig", seed: Optional[int] = None):
         prefs = config.deck[:]
+        if seed is not None:
+            random.seed(seed)
         random.shuffle(prefs)
         self.bids = {card: bid for card, bid in zip(config.deck, prefs)}
 

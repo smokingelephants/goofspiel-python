@@ -110,7 +110,8 @@ class GoofLogger(object):
 
         # Assumes players are ordered by score
 
-        self.logger.info(f"{generation},{players[0].score.as_str()}")
+        all_scores = "/".join(p.score.as_str() for p in players)
+        self.logger.info(f"{generation},{all_scores}")
 
 
 @attr.s()

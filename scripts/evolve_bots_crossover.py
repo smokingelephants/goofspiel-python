@@ -15,7 +15,7 @@ config = goofspiel.GameConfig(
     namer=bot_namer.NumberedNamer(),
     logger=goofspiel.GoofLogger(log_types=["HIGH_SCORE"]),
     scorer=scorer_lib.half_diff,
-    breeder=breed_lib.geneless_breeding,
+    breeder=breed_lib.breed_prefs,
     mutator=mutation_lib.no_mutation,
     mutation_degree=0.0,
 )
