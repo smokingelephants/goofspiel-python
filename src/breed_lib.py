@@ -160,6 +160,7 @@ def breed_prefs_perc(
             tind += 1
         new_prefs[tind] = elem
 
+    print(new_prefs)
     bids = bids_from_prefs(new_prefs)
     player = player_lib.BotPlayer(config)
     player.bids = bids  # Override

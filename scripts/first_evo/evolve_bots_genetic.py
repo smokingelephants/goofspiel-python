@@ -20,9 +20,9 @@ config = goofspiel.GameConfig(
     mutation_degree=0.0,
 )
 goofspiel.evolve_players(
-    seed_players=[player_lib.BotPlayer(config, seed=_ * 10) for _ in range(3)],
-    n_bots=4,
-    survival_rate=3,
+    seed_players=[player_lib.BotPlayer(config, seed=_ * 11) for _ in range(10)],
+    n_bots=25,
+    survival_rate=10,
     config=config,
     generations=200,
 )
