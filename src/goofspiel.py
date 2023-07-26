@@ -23,7 +23,9 @@ class GoofLogger(object):
         "BIDS",
         "PRIZES",
         "RESULTS",
+        "ALL_SCORES",
         "HIGH_SCORE",
+        "FINAL_SCORE",
     )
 
     def __init__(
@@ -35,7 +37,8 @@ class GoofLogger(object):
         message type is passed in log_types."""
         self.logger = logger
         if not self.logger:
-            self.logger = logging.getLogger("default_goof_logger")
+            # TODO: Do something smarter than attaching random number.
+            self.logger = logging.getLogger(f"default_goof_logger{random.random()}")
             self.logger.setLevel(logging.INFO)
             console_handler = logging.StreamHandler()
             console_handler.setLevel(logging.INFO)
@@ -104,14 +107,28 @@ class GoofLogger(object):
                 f"{player.name} got {rankth} place with {player.score.as_str()}"
             )
 
+    def all_scores(self, generation: int, players: List[player_lib.Player]) -> None:
+        if "ALL_SCORES" not in self.log_types:
+            return
+
+        all_scores = "/".join(p.score.as_str() for p in players)
+        self.logger.info(f"{generation},{all_scores}")
+
     def high_score(self, generation: int, players: List[player_lib.Player]) -> None:
         if "HIGH_SCORE" not in self.log_types:
             return
 
         # Assumes players are ordered by score
+        self.logger.info(f"{generation},{players[0].score.as_str()}")
 
-        all_scores = "/".join(p.score.as_str() for p in players)
-        self.logger.info(f"{generation},{all_scores}")
+    def final_score(self, experiment_name: Optional[str], players: List[player_lib.Player]) -> None:
+        if "FINAL_SCORE" not in self.log_types:
+            return
+
+        if experiment_name is None:
+            experiment_name = "Unnamed experiment"
+
+        self.logger.info(f"{experiment_name},{players[0].score.as_str()}")
 
 
 @attr.s()
@@ -155,6 +172,7 @@ def evolve_players(
     survival_rate: int,
     generations: int,
     config: GameConfig,
+    experiment_name: Optional[str] = None,
 ) -> None:
     players = seed_players[:]
 
@@ -168,12 +186,15 @@ def evolve_players(
 
         if generations - 1 == gen:
             # We don't need to score them again.
-            return
+            break
 
         play_game_players(players, config)  # This will score / sort in-place
         players = players[:survival_rate]
 
         config.logger.high_score(gen, players)
+        config.logger.all_scores(gen, players)
+
+    config.logger.final_score(experiment_name, players)
 
 
 def play_game(n_bots: int, config: GameConfig) -> None:

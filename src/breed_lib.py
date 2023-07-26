@@ -102,11 +102,6 @@ def breed_pairs_perc(
     player = player_lib.BotPlayer(config)
     player.bids = bids  # Override
 
-    # print([mom.bids[i] for i in range(1, 20)])
-    # print([dad.bids[i] for i in range(1, 20)])
-    # print([bids[i] for i in range(1, 20)])
-    # assert(False)
-
     return player
 
 
@@ -160,7 +155,6 @@ def breed_prefs_perc(
             tind += 1
         new_prefs[tind] = elem
 
-    print(new_prefs)
     bids = bids_from_prefs(new_prefs)
     player = player_lib.BotPlayer(config)
     player.bids = bids  # Override
