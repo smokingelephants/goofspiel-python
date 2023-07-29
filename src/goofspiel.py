@@ -121,7 +121,9 @@ class GoofLogger(object):
         # Assumes players are ordered by score
         self.logger.info(f"{generation},{players[0].score.as_str()}")
 
-    def final_score(self, experiment_name: Optional[str], players: List[player_lib.Player]) -> None:
+    def final_score(
+        self, experiment_name: Optional[str], players: List[player_lib.Player]
+    ) -> None:
         if "FINAL_SCORE" not in self.log_types:
             return
 
@@ -182,7 +184,7 @@ def evolve_players(
             players.append(config.breeder(mom, dad, config))
 
         for player in players:
-            config.mutator(player, config.mutation_degree)
+            config.mutator(player, config)
 
         if generations - 1 == gen:
             # We don't need to score them again.

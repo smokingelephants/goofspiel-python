@@ -8,7 +8,11 @@ from shared_types import *
 
 
 def geneless_breeding(
-    mom: player_lib.BotPlayer, dad: player_lib.BotPlayer, config: "GameConfig"
+    mom: player_lib.BotPlayer,
+    dad: player_lib.BotPlayer,
+    config: "GameConfig",
+    mom_perc: float = 0.5,
+    dad_perc: float = 0.5,
 ) -> player_lib.BotPlayer:
     """For this one, just ignore parents."""
     return player_lib.BotPlayer(config)
@@ -42,12 +46,12 @@ def bids_from_pairs(pairs: List[Tuple[Card, Card]]) -> Dict[Card, Bid]:
     return bids_from_prefs(prefs)
 
 
-def breed_pairs_perc(
+def breed_pairs(
     mom: player_lib.BotPlayer,
-    mom_perc: float,
     dad: player_lib.BotPlayer,
-    dad_perc: float,
     config: "GameConfig",
+    mom_perc: float = 0.5,
+    dad_perc: float = 0.5,
 ) -> player_lib.BotPlayer:
     """We choose pairs from both parents."""
     if 1.0 != mom_perc + dad_perc:
@@ -105,12 +109,6 @@ def breed_pairs_perc(
     return player
 
 
-def breed_pairs(
-    mom: player_lib.BotPlayer, dad: player_lib.BotPlayer, config: "GameConfig"
-) -> player_lib.BotPlayer:
-    return breed_pairs_perc(mom, 0.5, dad, 0.5, config)
-
-
 def prefs_from_bids(bids: Dict[Card, Bid]) -> List[Card]:
     prefs = [(bid, card) for card, bid in bids.items()]
     prefs.sort()
@@ -121,12 +119,12 @@ def bids_from_prefs(prefs: List[Card]) -> Dict[Card, Bid]:
     return {card: bid for card, bid in zip(prefs, sorted(prefs))}
 
 
-def breed_prefs_perc(
+def breed_prefs(
     mom: player_lib.BotPlayer,
-    mom_perc: float,
     dad: player_lib.BotPlayer,
-    dad_perc: float,
     config: "GameConfig",
+    mom_perc: float = 0.5,
+    dad_perc: float = 0.5,
 ) -> player_lib.BotPlayer:
     """Classic crossover technique."""
     if 1.0 != mom_perc + dad_perc:
@@ -139,6 +137,10 @@ def breed_prefs_perc(
     used_cards = set()
 
     mom_size = math.floor(mom_perc * len(mom_prefs))
+    if 0 == mom_size:
+        return dad_prefs
+    if len(mom_prefs) <= mom_size:
+        return mom_prefs
     i, j = sorted(random.sample(range(len(mom_prefs)), 2))
     while j - i != mom_size:
         i, j = sorted(random.sample(range(len(mom_prefs)), 2))
@@ -160,9 +162,3 @@ def breed_prefs_perc(
     player.bids = bids  # Override
 
     return player
-
-
-def breed_prefs(
-    mom: player_lib.BotPlayer, dad: player_lib.BotPlayer, config: "GameConfig"
-) -> player_lib.BotPlayer:
-    return breed_prefs_perc(mom, 0.5, dad, 0.5, config)

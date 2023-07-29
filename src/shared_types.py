@@ -9,8 +9,10 @@ Bid = int
 # TODO: Consider making this a strong type
 Card = int
 
-BreedFunction = Callable[["BotPlayer", "BotPlayer", "GameConfig"], "BotPlayer"]
-MutationFunction = Callable[["BotPlayer", float], None]
+BreedFunction = Callable[
+    ["BotPlayer", "BotPlayer", "GameConfig", float, float], "BotPlayer"
+]
+MutationFunction = Callable[["BotPlayer", "GameConfig"], "BotPlayer"]
 
 
 class Score(object):
