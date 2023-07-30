@@ -20,3 +20,7 @@ def real_score(
     prize = Score(0, prize, num_winners)
     zero = Score(0)
     return [(p, prize if b == max_bid else zero) for p, b in player_bids]
+
+
+default = real_score
+

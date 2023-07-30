@@ -9,7 +9,10 @@ from typing import List, Optional, Tuple
 import attr
 
 import bot_namer
+import breed_lib
+import mutation_lib
 import player_lib
+import scorer_lib
 from shared_types import *
 
 
@@ -136,12 +139,13 @@ class GoofLogger(object):
 @attr.s()
 class GameConfig(object):
     deck: List[Card] = attr.ib()
-    namer: bot_namer.BotNamer = attr.ib()
-    logger: GoofLogger = attr.ib()
-    scorer: Scorer = attr.ib()
-    breeder: BreedFunction = attr.ib()
-    mutator: MutationFunction = attr.ib()
-    mutation_degree: float = attr.ib()
+    namer: bot_namer.BotNamer = attr.ib(factory=bot_namer.NumberedNamer)
+    logger: GoofLogger = attr.ib(factory=GoofLogger)
+    scorer: Scorer = attr.ib(default=scorer_lib.default)
+    breeder: BreedFunction = attr.ib(default=breed_lib.default)
+    mutator: MutationFunction = attr.ib(default=mutation_lib.default)
+    mutation_degree: float = attr.ib(default=0.0)
+    advanced_bids: bool = attr.ib(default=True)
 
 
 def play_game_players(players: List[player_lib.Player], config: GameConfig) -> None:
@@ -201,8 +205,11 @@ def evolve_players(
 
 def play_game(n_bots: int, config: GameConfig) -> None:
     players = [player_lib.BotPlayer(config) for _ in range(n_bots)]
-
-    # TODO: Add human player here
-    raise NotImplementedError
+    players.append(player_lib.HumanPlayer(config))
 
     play_game_players(players, config)
+
+
+def play_until_dead(n_bots: int, config: GameConfig) -> None:
+    raise NotImplementedError    
+

@@ -15,3 +15,6 @@ class NumberedNamer(object):
         name = f"Bot #{self.counter}"
         self.counter += 1
         return name
+
+
+default = NumberedNamer

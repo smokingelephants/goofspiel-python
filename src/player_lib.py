@@ -50,3 +50,23 @@ class BotPlayer(Player):
 
     def _get_bid(self, card: Card) -> Bid:
         return self.bids[card]
+
+
+class HumanPlayer(Player):
+    def __init__(self, config: "GameConfig"):
+        # If advanced_bids is set, then ask for all bids before game starts
+        self.advanced_bids = config.advanced_bids
+        self.bids = dict()
+        if self.advanced_bids:
+            self.bids = {c: self._prompt_user(c) for c in config.deck}
+
+        super().__init__("HUMAN")
+
+    def _prompt_user(self, card: Card) -> Bid:
+        return int(input(f"Enter bid for card {card}:"))
+
+    def _get_bid(self, card: Card) -> Bid:
+        if self.advanced_bids:
+            return self.bids[card]
+        return self._prompt_user(card)
+

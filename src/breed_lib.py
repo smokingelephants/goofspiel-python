@@ -162,3 +162,7 @@ def breed_prefs(
     player.bids = bids  # Override
 
     return player
+
+
+default = breed_pairs
+

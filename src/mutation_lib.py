@@ -40,3 +40,7 @@ def reverse_mutation(
         config.mutation_degree,
         1.0 - config.mutation_degree,
     )
+
+
+default = reverse_mutation
+
