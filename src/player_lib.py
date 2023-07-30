@@ -8,11 +8,17 @@ class Player(object):
     def __init__(self, name: str):
         self.name = name
         self.started = False
+        self.is_human = False
 
     def new_game(self) -> None:
         self.used_bids = set()
         self.started = True
         self.score = Score(0)
+        self._new_game()
+
+    def _new_game(self) -> None:
+        # Usually do nothing
+        pass
 
     def add_score(self, score: Score) -> Bid:
         if not self.started:
@@ -56,11 +62,15 @@ class HumanPlayer(Player):
     def __init__(self, config: "GameConfig"):
         # If advanced_bids is set, then ask for all bids before game starts
         self.advanced_bids = config.advanced_bids
-        self.bids = dict()
-        if self.advanced_bids:
-            self.bids = {c: self._prompt_user(c) for c in config.deck}
+        self.deck = config.deck[:]
 
         super().__init__("HUMAN")
+        self.is_human = True
+
+    def _new_game(self) -> None:
+        self.bids = dict()
+        if self.advanced_bids:
+            self.bids = {c: self._prompt_user(c) for c in self.deck}
 
     def _prompt_user(self, card: Card) -> Bid:
         return int(input(f"Enter bid for card {card}:"))

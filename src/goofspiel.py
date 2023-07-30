@@ -205,10 +205,15 @@ def evolve_players(
 
 def play_game(n_bots: int, config: GameConfig) -> None:
     players = [player_lib.BotPlayer(config) for _ in range(n_bots)]
-    players.append(player_lib.HumanPlayer(config))
-
+    players = [player_lib.HumanPlayer(config)] + players
     play_game_players(players, config)
 
 
 def play_until_dead(n_bots: int, config: GameConfig) -> None:
-    raise NotImplementedError
+    players = [player_lib.BotPlayer(config) for _ in range(n_bots)]
+    players = [player_lib.HumanPlayer(config)] + players
+    while any([x.is_human for x in players]):
+        play_game_players(players, config)
+        players = players[:-1] + [player_lib.BotPlayer(config)]
+    print("YOU LOSE!")
+
