@@ -1,14 +1,17 @@
 import random
 from typing import Optional
 
+import shared_logic
 from shared_types import *
 
 
 class Player(object):
-    def __init__(self, name: str):
+    def __init__(self, name: str, config: "GameConfig"):
         self.name = name
         self.started = False
         self.is_human = False
+        # Keep a pointer for cloning and stuff
+        self.config = config
 
     def new_game(self) -> None:
         self.used_bids = set()
@@ -43,6 +46,14 @@ class Player(object):
     def _get_bid(self, card: Card) -> Bid:
         raise NotImplementedError
 
+    def fossilize(self) -> "BotPlayer":
+        """Return a robot version of this player."""
+        raise NotImplementedError
+
+    def clone(self) -> "Player":
+        """Duplicate this player"""
+        raise NotImplementedError
+
 
 class BotPlayer(Player):
     def __init__(self, config: "GameConfig", seed: Optional[int] = None):
@@ -52,10 +63,19 @@ class BotPlayer(Player):
         random.shuffle(prefs)
         self.bids = {card: bid for card, bid in zip(config.deck, prefs)}
 
-        super().__init__(config.namer.next_name())
+        super().__init__(config.namer.next_name(), config)
 
     def _get_bid(self, card: Card) -> Bid:
         return self.bids[card]
+
+    def fossilize(self) -> "BotPlayer":
+        # Why {self.name}, you've always been a bot.
+        return self
+
+    def clone(self) -> "BotPlayer":
+        result = BotPlayer(self.config)
+        result.bids = {k: v for k, v in self.bids.items()}
+        return result
 
 
 class HumanPlayer(Player):
@@ -64,18 +84,30 @@ class HumanPlayer(Player):
         self.advanced_bids = config.advanced_bids
         self.deck = config.deck[:]
 
-        super().__init__("HUMAN")
+        super().__init__("HUMAN", config)
         self.is_human = True
 
     def _new_game(self) -> None:
         self.bids = dict()
         if self.advanced_bids:
-            self.bids = {c: self._prompt_user(c) for c in self.deck}
+            for card in self.deck:
+                self._prompt_user(card)
 
     def _prompt_user(self, card: Card) -> Bid:
-        return int(input(f"Enter bid for card {card}:"))
+        bid = int(input(f"Enter bid for card {card}:"))
+        self.bids[card] = bid
+        return bid
 
     def _get_bid(self, card: Card) -> Bid:
         if self.advanced_bids:
             return self.bids[card]
         return self._prompt_user(card)
+
+    def fossilize(self) -> "BotPlayer":
+        result = BotPlayer(self.config)
+        result.prefs = shared_logic.prefs_from_bids(self.bids)
+        return result
+
+    def clone(self) -> "HumanPlayer":
+        raise GoofErrors("Cloning humans is not yet implemented.  Try fossilizing first.")
+    

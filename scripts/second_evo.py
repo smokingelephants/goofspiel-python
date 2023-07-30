@@ -47,7 +47,6 @@ for breeder, mutator, mutation_degree, gen, init_pop, seed in itertools.product(
         scorer=scorer_lib.half_diff,
         breeder=breeder_func,
         mutator=mutator_func,
-        mutation_degree=mutation_degree,
     )
     goofspiel.evolve_players(
         seed_players=[
@@ -58,5 +57,6 @@ for breeder, mutator, mutation_degree, gen, init_pop, seed in itertools.product(
         survival_rate=10,
         config=config,
         generations=gen,
+        mutation_degree=mutation_degree,
         experiment_name=experiment_name,
     )

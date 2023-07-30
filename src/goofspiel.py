@@ -144,7 +144,6 @@ class GameConfig(object):
     scorer: Scorer = attr.ib(default=scorer_lib.default)
     breeder: BreedFunction = attr.ib(default=breed_lib.default)
     mutator: MutationFunction = attr.ib(default=mutation_lib.default)
-    mutation_degree: float = attr.ib(default=0.0)
     advanced_bids: bool = attr.ib(default=True)
 
 
@@ -174,21 +173,22 @@ def play_game_players(players: List[player_lib.Player], config: GameConfig) -> N
 
 def evolve_players(
     seed_players: List[player_lib.BotPlayer],
-    n_bots: int,
+    width: int,
     survival_rate: int,
     generations: int,
+    mutation_degree: float,
     config: GameConfig,
     experiment_name: Optional[str] = None,
-) -> None:
+) -> List[player_lib.BotPlayer]:
     players = seed_players[:]
 
     for gen in range(generations):
-        while len(players) < n_bots:
+        while len(players) < width:
             mom, dad = random.sample(players, 2)
             players.append(config.breeder(mom, dad, config))
 
         for player in players:
-            config.mutator(player, config)
+            config.mutator(player, mutation_degree, config)
 
         if generations - 1 == gen:
             # We don't need to score them again.
@@ -202,6 +202,8 @@ def evolve_players(
 
     config.logger.final_score(experiment_name, players)
 
+    return players
+
 
 def play_game(n_bots: int, config: GameConfig) -> None:
     players = [player_lib.BotPlayer(config) for _ in range(n_bots)]
@@ -209,11 +211,46 @@ def play_game(n_bots: int, config: GameConfig) -> None:
     play_game_players(players, config)
 
 
-def play_until_dead(n_bots: int, config: GameConfig) -> None:
+@attr.s()
+class EvoConfig(object):
+    """I choose to not pass the entire class to evolve_players.  This is a little bit
+    awkward since some features are assigned passed with GameConfig.  But these are
+    features that may change mid-playthrough in future implementations."""
+    # How many times to repeat players in cloning work.
+    multiplicity: int = attr.ib(default=1)
+    # How many fresh random bots to add to seed population.
+    new_bots: int = attr.ib(default=3)
+    # Total population size
+    width: int = attr.ib(default=20)
+    # How many bots to keep between generations
+    survival_rate: int = attr.ib(default=10)
+    # Number of generations
+    generations: int = attr.ib(default=3)
+    # Used in the mutation function.
+    mutation_degree: float = attr.ib(default=0.0)
+
+
+def play_until_dead(n_bots: int, config: GameConfig, evo_config: EvoConfig) -> None:
     players = [player_lib.BotPlayer(config) for _ in range(n_bots)]
     players = [player_lib.HumanPlayer(config)] + players
     while any([x.is_human for x in players]):
         play_game_players(players, config)
-        players = players[:-1] + [player_lib.BotPlayer(config)]
+        players = players[:-1]
+        # Do some evolution
+        players = [p.fossilize() for p in players]
+        for _ in range(evo_config.multiplicity):
+            players += [p.clone() for p in players]
+        for _ in range(evo_config.new_bots):
+            players.append(player_lib.BotPlayer(config))
+        players = evolve_players(
+            players,
+            evo_config.width,
+            evo_config.survival_rate,
+            evo_config.generations,
+            evo_config.mutation_degree,
+            config
+        )
+        players = players[:n_bots]
+        players = [player_lib.HumanPlayer(config)] + players
     print("YOU LOSE!")
 

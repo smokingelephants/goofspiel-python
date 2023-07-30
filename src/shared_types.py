@@ -12,7 +12,7 @@ Card = int
 BreedFunction = Callable[
     ["BotPlayer", "BotPlayer", "GameConfig", float, float], "BotPlayer"
 ]
-MutationFunction = Callable[["BotPlayer", "GameConfig"], "BotPlayer"]
+MutationFunction = Callable[["BotPlayer", float, "GameConfig"], "BotPlayer"]
 
 
 class Score(object):

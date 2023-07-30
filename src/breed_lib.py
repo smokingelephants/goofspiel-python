@@ -1,9 +1,8 @@
 import random
 from typing import Dict, List, Tuple
 
-import networkx as nx
-
 import player_lib
+import shared_logic
 from shared_types import *
 
 
@@ -18,34 +17,6 @@ def geneless_breeding(
     return player_lib.BotPlayer(config)
 
 
-def pairs_from_bids(bids: Dict[Card, Bid]) -> List[Tuple[Card, Card]]:
-    """Returns (c, d) for all c, d where bids prefers d over c."""
-    result = []
-
-    for card_a, bid_a in bids.items():
-        for card_b, bid_b in bids.items():
-            if card_a <= card_b:
-                # So that we don't double-count or self-match pairs
-                continue
-
-            if bid_a < bid_b:
-                result.append((card_a, card_b))
-            elif bid_b < bid_a:
-                result.append((card_b, card_a))
-            else:
-                raise GoofErrors("This should never happen")
-
-    return result
-
-
-def bids_from_pairs(pairs: List[Tuple[Card, Card]]) -> Dict[Card, Bid]:
-    graph = nx.DiGraph()
-    for x, y in pairs:
-        graph.add_edge(x, y)
-    prefs = list(nx.topological_sort(graph))
-    return bids_from_prefs(prefs)
-
-
 def breed_pairs(
     mom: player_lib.BotPlayer,
     dad: player_lib.BotPlayer,
@@ -57,8 +28,8 @@ def breed_pairs(
     if 1.0 != mom_perc + dad_perc:
         raise GoofErrors("Parent percentages must add to 100%")
 
-    mom_pairs = pairs_from_bids(mom.bids)
-    dad_pairs = pairs_from_bids(dad.bids)
+    mom_pairs = shared_logic.pairs_from_bids(mom.bids)
+    dad_pairs = shared_logic.pairs_from_bids(dad.bids)
 
     encountered_pairs: Set[Tuple[Card, Card]] = set()
     new_pairs: Set[Tuple[Card, Card]] = set()
@@ -102,21 +73,11 @@ def breed_pairs(
 
         add_pair((x, y))
 
-    bids = bids_from_pairs(new_pairs)
+    bids = shared_logic.bids_from_pairs(new_pairs)
     player = player_lib.BotPlayer(config)
     player.bids = bids  # Override
 
     return player
-
-
-def prefs_from_bids(bids: Dict[Card, Bid]) -> List[Card]:
-    prefs = [(bid, card) for card, bid in bids.items()]
-    prefs.sort()
-    return [pref[1] for pref in prefs]
-
-
-def bids_from_prefs(prefs: List[Card]) -> Dict[Card, Bid]:
-    return {card: bid for card, bid in zip(prefs, sorted(prefs))}
 
 
 def breed_prefs(
@@ -130,8 +91,8 @@ def breed_prefs(
     if 1.0 != mom_perc + dad_perc:
         raise GoofErrors("Parent percentages must add to 100%")
 
-    mom_prefs = prefs_from_bids(mom.bids)
-    dad_prefs = prefs_from_bids(dad.bids)
+    mom_prefs = shared_logic.prefs_from_bids(mom.bids)
+    dad_prefs = shared_logic.prefs_from_bids(dad.bids)
 
     new_prefs = [None] * len(mom_prefs)
     used_cards = set()
@@ -157,7 +118,7 @@ def breed_prefs(
             tind += 1
         new_prefs[tind] = elem
 
-    bids = bids_from_prefs(new_prefs)
+    bids = shared_logic.bids_from_prefs(new_prefs)
     player = player_lib.BotPlayer(config)
     player.bids = bids  # Override
 
