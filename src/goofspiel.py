@@ -13,6 +13,7 @@ import breed_lib
 import mutation_lib
 import player_lib
 import scorer_lib
+import shared_logic
 from shared_types import *
 
 
@@ -29,6 +30,7 @@ class GoofLogger(object):
         "ALL_SCORES",
         "HIGH_SCORE",
         "FINAL_SCORE",
+        "GUTS",
     )
 
     def __init__(
@@ -135,6 +137,12 @@ class GoofLogger(object):
 
         self.logger.info(f"{experiment_name},{players[0].score.as_str()}")
 
+    def guts(self, player: player_lib.Player) -> None:
+        if "GUTS" not in self.log_types:
+            return
+
+        self.logger.info(f"{player.name} strategy = {shared_logic.shorthand_from_bids(player.bids)}")
+
 
 @attr.s()
 class GameConfig(object):
@@ -150,6 +158,7 @@ class GameConfig(object):
 def play_game_players(players: List[player_lib.Player], config: GameConfig) -> None:
     for player in players:
         player.new_game()
+        config.logger.guts(player)
 
     for round_number, card in enumerate(config.deck):
         config.logger.round(round_number, card)

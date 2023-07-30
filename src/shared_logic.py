@@ -5,6 +5,12 @@ import networkx as nx
 from shared_types import *
 
 
+def shorthand_from_bids(bids: Dict[Card, Bid]) -> List[Bid]:
+    x = [(c, b) for c, b in bids.items()]
+    x.sort()
+    return [xi[1] for xi in x]
+
+
 def pairs_from_bids(bids: Dict[Card, Bid]) -> List[Tuple[Card, Card]]:
     """Returns (c, d) for all c, d where bids prefers d over c."""
     result = []
