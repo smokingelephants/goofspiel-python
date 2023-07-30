@@ -233,22 +233,29 @@ class EvoConfig(object):
 def play_until_dead(n_bots: int, config: GameConfig, evo_config: EvoConfig) -> None:
     players = [player_lib.BotPlayer(config) for _ in range(n_bots)]
     players = [player_lib.HumanPlayer(config)] + players
-    while any([x.is_human for x in players]):
+    while True:
         play_game_players(players, config)
         players = players[:-1]
+        if not any([x.is_human for x in players]):
+            break
         # Do some evolution
         players = [p.fossilize() for p in players]
         for _ in range(evo_config.multiplicity):
             players += [p.clone() for p in players]
         for _ in range(evo_config.new_bots):
             players.append(player_lib.BotPlayer(config))
+        shadow_config = GameConfig(
+            deck=config.deck,
+            namer=bot_namer.NumberedNamer(),
+            logger=GoofLogger(log_types=[]),
+        )
         players = evolve_players(
             players,
             evo_config.width,
             evo_config.survival_rate,
             evo_config.generations,
             evo_config.mutation_degree,
-            config
+            shadow_config
         )
         players = players[:n_bots]
         players = [player_lib.HumanPlayer(config)] + players

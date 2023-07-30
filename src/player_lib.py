@@ -41,6 +41,9 @@ class Player(object):
             )
         self.used_bids.add(bid)
 
+        if bid not in self.config.deck:
+            raise GoofErrors(f"Can't bid {bid}, because it's not in the deck: {self.config.deck}")
+
         return bid
 
     def _get_bid(self, card: Card) -> Bid:
