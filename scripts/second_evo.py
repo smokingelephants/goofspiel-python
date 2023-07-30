@@ -13,8 +13,8 @@ import scorer_lib
 
 ex_breeder = [
     ("BREED_PREFS", breed_lib.breed_prefs),
-    #("BREED_PAIRS", breed_lib.breed_pairs),
-    #("BREEDLESS", breed_lib.geneless_breeding),
+    # ("BREED_PAIRS", breed_lib.breed_pairs),
+    # ("BREEDLESS", breed_lib.geneless_breeding),
 ]
 ex_mutator = [
     ("MUTATE_REV", mutation_lib.reverse_mutation),

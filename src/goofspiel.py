@@ -211,5 +211,4 @@ def play_game(n_bots: int, config: GameConfig) -> None:
 
 
 def play_until_dead(n_bots: int, config: GameConfig) -> None:
-    raise NotImplementedError    
-
+    raise NotImplementedError

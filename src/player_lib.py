@@ -69,4 +69,3 @@ class HumanPlayer(Player):
         if self.advanced_bids:
             return self.bids[card]
         return self._prompt_user(card)
-

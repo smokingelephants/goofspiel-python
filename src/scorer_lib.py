@@ -23,4 +23,3 @@ def real_score(
 
 
 default = real_score
-
