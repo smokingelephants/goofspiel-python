@@ -6,12 +6,15 @@ from shared_types import *
 
 
 class Player(object):
-    def __init__(self, name: str, config: "GameConfig"):
-        self.name = name
+    def __init__(self, config: "GameConfig"):
+        self.name = "not-yet-named"
         self.started = False
         self.is_human = False
         # Keep a pointer for cloning and stuff
         self.config = config
+
+    def assign_name(self, config) -> None:
+        self.name = config.namer.next_name()
 
     def new_game(self) -> None:
         self.used_bids = set()
@@ -66,7 +69,7 @@ class BotPlayer(Player):
         random.shuffle(prefs)
         self.bids = {card: bid for card, bid in zip(config.deck, prefs)}
 
-        super().__init__(config.namer.next_name(), config)
+        super().__init__(config)
 
     def _get_bid(self, card: Card) -> Bid:
         return self.bids[card]
@@ -87,7 +90,8 @@ class HumanPlayer(Player):
         self.advanced_bids = config.advanced_bids
         self.deck = config.deck[:]
 
-        super().__init__("HUMAN", config)
+        super().__init__(config)
+        self.name = "HUMAN"
         self.is_human = True
 
     def _new_game(self) -> None:

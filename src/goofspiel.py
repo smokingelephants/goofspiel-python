@@ -232,12 +232,17 @@ class EvoConfig(object):
 
 def play_until_dead(n_bots: int, config: GameConfig, evo_config: EvoConfig) -> None:
     players = [player_lib.BotPlayer(config) for _ in range(n_bots)]
+    for player in players:
+        player.assign_name(config)
     players = [player_lib.HumanPlayer(config)] + players
     while True:
         play_game_players(players, config)
         players = players[:-1]
         if not any([x.is_human for x in players]):
             break
+        old_players = players[:]  # Hold copy
+        old_names = {p.name for p in old_players}
+        
         # Do some evolution
         players = [p.fossilize() for p in players]
         for _ in range(evo_config.multiplicity):
@@ -257,7 +262,16 @@ def play_until_dead(n_bots: int, config: GameConfig, evo_config: EvoConfig) -> N
             evo_config.mutation_degree,
             shadow_config
         )
-        players = players[:n_bots]
-        players = [player_lib.HumanPlayer(config)] + players
+
+        # Get a new player and combine with old players
+        for player in players:
+            if player.name not in old_names:
+                new_player = player
+                player.assign_name(config)
+                break
+        else:
+            raise GoofError("This should never happen 2")
+        players = old_players + [new_player]
+
     print("YOU LOSE!")
 
