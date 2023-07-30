@@ -22,7 +22,7 @@ def reverse_player(
 
 
 def reverse_mutation(
-    player: player_lib.BotPlayer, mutation_degree:float, config: "GameConfig"
+    player: player_lib.BotPlayer, mutation_degree: float, config: "GameConfig"
 ) -> player_lib.BotPlayer:
     if random.random() < 0.5:
         return config.breeder(

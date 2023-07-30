@@ -45,7 +45,9 @@ class Player(object):
         self.used_bids.add(bid)
 
         if bid not in self.config.deck:
-            raise GoofErrors(f"Can't bid {bid}, because it's not in the deck: {self.config.deck}")
+            raise GoofErrors(
+                f"Can't bid {bid}, because it's not in the deck: {self.config.deck}"
+            )
 
         return bid
 
@@ -116,5 +118,6 @@ class HumanPlayer(Player):
         return result
 
     def clone(self) -> "HumanPlayer":
-        raise GoofErrors("Cloning humans is not yet implemented.  Try fossilizing first.")
-    
+        raise GoofErrors(
+            "Cloning humans is not yet implemented.  Try fossilizing first."
+        )

@@ -41,5 +41,3 @@ def prefs_from_bids(bids: Dict[Card, Bid]) -> List[Card]:
 
 def bids_from_prefs(prefs: List[Card]) -> Dict[Card, Bid]:
     return {card: bid for card, bid in zip(prefs, sorted(prefs))}
-
-

@@ -216,6 +216,7 @@ class EvoConfig(object):
     """I choose to not pass the entire class to evolve_players.  This is a little bit
     awkward since some features are assigned passed with GameConfig.  But these are
     features that may change mid-playthrough in future implementations."""
+
     # How many times to repeat players in cloning work.
     multiplicity: int = attr.ib(default=1)
     # How many fresh random bots to add to seed population.
@@ -242,7 +243,7 @@ def play_until_dead(n_bots: int, config: GameConfig, evo_config: EvoConfig) -> N
             break
         old_players = players[:]  # Hold copy
         old_names = {p.name for p in old_players}
-        
+
         # Do some evolution
         players = [p.fossilize() for p in players]
         for _ in range(evo_config.multiplicity):
@@ -260,7 +261,7 @@ def play_until_dead(n_bots: int, config: GameConfig, evo_config: EvoConfig) -> N
             evo_config.survival_rate,
             evo_config.generations,
             evo_config.mutation_degree,
-            shadow_config
+            shadow_config,
         )
 
         # Get a new player and combine with old players
@@ -274,4 +275,3 @@ def play_until_dead(n_bots: int, config: GameConfig, evo_config: EvoConfig) -> N
         players = old_players + [new_player]
 
     print("YOU LOSE!")
-
