@@ -6,7 +6,7 @@ import logging
 import random
 from typing import List, Optional, Tuple
 
-import attr
+import attrs
 
 import bot_namer
 import breed_lib
@@ -245,11 +245,25 @@ def play_until_dead(n_bots: int, config: GameConfig, evo_config: EvoConfig) -> N
     for player in players:
         player.assign_name(config)
     players = [player_lib.HumanPlayer(config)] + players
+    game_count = 0
     while True:
+        game_count += 1
+        print(f"game count: {game_count}")
         play_game_players(players, config)
         players = players[:-1]
         if not any([x.is_human for x in players]):
-            break
+            #if human came in last
+            #break 
+
+            #allow changing human strategy
+            # second try
+            print("adding second chance****")
+            players = players[:-1]
+            players = [player_lib.HumanPlayer(config)] + players
+            play_game_players(players, config)
+
+
+
         old_players = players[:]  # Hold copy
         old_names = {p.name for p in old_players}
 

@@ -86,7 +86,7 @@ class BotPlayer(Player):
         return result
 
 
-class HumanPlayer(Player):
+class HumanPlayer_v1(Player):
     def __init__(self, config: "GameConfig"):
         # If advanced_bids is set, then ask for all bids before game starts
         self.advanced_bids = config.advanced_bids
@@ -105,6 +105,54 @@ class HumanPlayer(Player):
     def _prompt_user(self, card: Card) -> Bid:
         bid = int(input(f"Enter bid for card {card}:"))
         self.bids[card] = bid
+        return bid
+
+    def _get_bid(self, card: Card) -> Bid:
+        if self.advanced_bids:
+            return self.bids[card]
+        return self._prompt_user(card)
+
+    def fossilize(self) -> "BotPlayer":
+        result = BotPlayer(self.config)
+        result.prefs = shared_logic.prefs_from_bids(self.bids)
+        return result
+
+    def clone(self) -> "HumanPlayer":
+        raise GoofErrors(
+            "Cloning humans is not yet implemented.  Try fossilizing first."
+        )
+
+
+class HumanPlayer(Player):
+    def __init__(self, config: "GameConfig"):
+        # If advanced_bids is set, then ask for all bids before game starts
+        self.advanced_bids = config.advanced_bids
+        self.deck = config.deck[:]
+
+        super().__init__(config)
+        self.name = "HUMAN"
+        self.is_human = True
+        self.repeat_last_bids = False
+        self.bids = dict()
+
+
+    def _new_game(self) -> None:
+        if not self.repeat_last_bids:
+            print(f"Current bids are: {self.bids}")
+            self.repeat_last_bids = bool(int(input(f"Woukd you like to repeat last bids for now? (0/1)")))
+        #self.bids = dict()
+
+        if self.advanced_bids:
+            for card in self.deck:
+                self._prompt_user(card)
+
+    def _prompt_user(self, card: Card) -> Bid:
+        if not self.repeat_last_bids:
+            bid = int(input(f"Enter bid for card {card}:"))
+            self.bids[card] = bid
+        else:
+            print(f"bid for card {card}: {self.bids[card]}")
+            bid = self.bids[card]
         return bid
 
     def _get_bid(self, card: Card) -> Bid:

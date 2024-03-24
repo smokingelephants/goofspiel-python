@@ -19,4 +19,4 @@ evo_config = goofspiel.EvoConfig(
     generations=3,
     mutation_degree=0.2,
 )
-goofspiel.play_until_dead(n_bots=1, config=config, evo_config=evo_config)
+goofspiel.play_until_dead(n_bots=5, config=config, evo_config=evo_config)
